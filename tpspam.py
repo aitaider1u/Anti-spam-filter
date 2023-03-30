@@ -10,11 +10,11 @@ def lireMail(fichier, dictionnaire):
 	mots = f.read().split(" ")
 	
 	x = [False] * len(dictionnaire) 
-	# à modifier...
+	
+	# modifié ..............................
 	for i in range(len(mots)):
-		if (mots[i] in dictionnaire): 
+		if (mots[i].upper() in dictionnaire): 
 			x[i] = True
-
 	f.close()
 	return x
 
@@ -23,6 +23,7 @@ def charge_dico(fichier):
 	mots = f.read().split("\n")
 	print("Chargé " + str(len(mots)) + " mots dans le dictionnaire")
 	f.close()
+	
 	return mots[:-1]
 
 def apprendBinomial(dossier, fichiers, dictionnaire):
@@ -31,7 +32,16 @@ def apprendBinomial(dossier, fichiers, dictionnaire):
 	Retourne un vecteur b de paramètres 
 		
 	"""
-	b = 0	# à modifier...
+	nb = len(fichiers)
+	epsilon = 1
+	
+	occurencesMots = np.zeros(len(dictionnaire))
+	for fichier in fichiers:
+		mail = lireMail(fichier,dictionnaire)
+		occurencesMots = occurencesMots + mail
+
+	#Lissage des paramètres 
+	b = ((occurencesMots + epsilon)/ (nb+2*epsilon ))
 	return b
 
 

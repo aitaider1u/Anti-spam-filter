@@ -10,9 +10,11 @@ def lireMail(fichier, dictionnaire):
 	mots = f.read().split(" ")
 	
 	x = [False] * len(dictionnaire) 
-
 	# à modifier...
-	
+	for i in range(len(mots)):
+		if (mots[i] in dictionnaire): 
+			x[i] = True
+
 	f.close()
 	return x
 
@@ -63,8 +65,8 @@ def test(dossier, isSpam, Pspam, Pham, bspam, bham):
 
 ############ programme principal ############
 
-dossier_spams = "spam"	# à vérifier
-dossier_hams = "ham"
+dossier_spams = "spam/baseapp/spam"	# à vérifier
+dossier_hams = "spam/baseapp/ham"
 
 fichiersspams = os.listdir(dossier_spams)
 fichiershams = os.listdir(dossier_hams)
@@ -79,8 +81,11 @@ print(dictionnaire)
 # Apprentissage des bspam et bham:
 print("apprentissage de bspam...")
 bspam = apprendBinomial(dossier_spams, fichiersspams, dictionnaire)
+
 print("apprentissage de bham...")
 bham = apprendBinomial(dossier_hams, fichiershams, dictionnaire)
+
+
 
 # Calcul des probabilités a priori Pspam et Pham:
 # Pspam = 

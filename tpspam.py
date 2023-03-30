@@ -10,11 +10,12 @@ def lireMail(fichier, dictionnaire):
 	mots = f.read().split(" ")
 	
 	x = [False] * len(dictionnaire) 
-	
+	dictionnaire =np.array(dictionnaire)
 	# modifié ..............................
-	for i in range(len(mots)):
-		if (mots[i].upper() in dictionnaire): 
-			x[i] = True
+	for i in range(len(mots)):			
+		index = np.where(dictionnaire == mots[i].upper())[0]
+		if len(index) >0:
+			x[index[0]] = True
 	f.close()
 	return x
 
@@ -30,7 +31,6 @@ def apprendBinomial(dossier, fichiers, dictionnaire):
 	"""
 	Fonction d'apprentissage d'une loi binomiale a partir des fichiers d'un dossier
 	Retourne un vecteur b de paramètres 
-		
 	"""
 	nb = len(fichiers)
 	epsilon = 1
@@ -42,7 +42,7 @@ def apprendBinomial(dossier, fichiers, dictionnaire):
 
 	#Lissage des paramètres 
 	b = ((occurencesMots + epsilon)/ (nb+2*epsilon ))
-	return b
+	return b   # vecteur de paramètres binomiaux
 
 
 def prediction(x, Pspam, Pham, bspam, bham):
@@ -53,6 +53,9 @@ def prediction(x, Pspam, Pham, bspam, bham):
 		
 	"""
 	
+
+
+
 	return False  # à modifier...
 	
 def test(dossier, isSpam, Pspam, Pham, bspam, bham):
@@ -78,8 +81,8 @@ def test(dossier, isSpam, Pspam, Pham, bspam, bham):
 dossier_spams = "spam/baseapp/spam"	# à vérifier
 dossier_hams = "spam/baseapp/ham"
 
-fichiersspams = os.listdir(dossier_spams)
-fichiershams = os.listdir(dossier_hams)
+fichiersspams = list(map(lambda e : dossier_spams+"/"+ e ,os.listdir(dossier_spams)))  
+fichiershams = list(map(lambda e : dossier_hams+"/"+ e ,os.listdir(dossier_hams)))  
 
 mSpam = len(fichiersspams)
 mHam = len(fichiershams)
@@ -95,12 +98,13 @@ bspam = apprendBinomial(dossier_spams, fichiersspams, dictionnaire)
 print("apprentissage de bham...")
 bham = apprendBinomial(dossier_hams, fichiershams, dictionnaire)
 
+print(bspam)
+#print(bham)
 
 
 # Calcul des probabilités a priori Pspam et Pham:
-# Pspam = 
-# Pham = 
-
+Pspam = mSpam/(mSpam+mHam) 
+Pham =  mHam/(mSpam+mHam)
 
 # Calcul des erreurs avec la fonction test():
 

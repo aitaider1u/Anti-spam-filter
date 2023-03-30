@@ -54,17 +54,25 @@ def prediction(x, Pspam, Pham, bspam, bham):
 
 	#calcul de P(Y=Spam | X=x) 
 	#Pspam_x= math.log(Pspam) + np.sum(np.log((bspam ** x) * ((1-bspam) ** (1-np.array(x)))))
-	Px_spam = np.prod((bspam ** x) * ((1-bspam) ** (1-np.array(x))))
+	A = ((1-bspam) ** (1-np.array(x)))   # calcul intemediare 
+	B = (bspam ** x) # calcul intemediare 
+	Px_spam = np.prod(A *B)
 	Pspam_x=  Pspam * Px_spam
+	Z_spam = math.log(Pspam)+ np.sum(np.log(A * B))
 	
 	#calcul de P(Y=Ham | X=x)
 	#Pham_x = math.log(Pham) + np.sum(np.log((bham ** x) * ((1-bham) ** (1-np.array(x)))))
-	Px_ham = np.prod( (bham ** x) * ((1-bham) ** (1-np.array(x))))
+	A = ((1-bham) ** (1-np.array(x)))   # calcul intemediare 
+	B = (bham ** x) # calcul intemediare 
+	Px_ham = np.prod(  A * B)
 	Pham_x=  Pham * Px_ham
+	Z_ham = math.log(Pspam)+ np.sum(np.log(A * B))
 
-	if (Pspam_x >= Pham_x):
-		return True
-	return False  # à modifier...
+	#limiter l’influence de la précision de la machine sur le calcul
+
+	if (Z_spam >= Z_ham):
+		return (True,Px_spam,Px_ham)
+	return (False,Px_spam,Px_ham)  # à modifier...
 	
 def test(dossier, isSpam, Pspam, Pham, bspam, bham):
 	"""
@@ -78,7 +86,7 @@ def test(dossier, isSpam, Pspam, Pham, bspam, bham):
 	nbErreur = 0 
 	dictionnaire=  charge_dico("dictionnaire1000en.txt")
 	for fichier in fichiers:
-		res = prediction(lireMail(dossier+"/"+fichier,dictionnaire),Pspam, Pham, bspam, bham)
+		(res,Pspam_x,Pham_x) = prediction(lireMail(dossier+"/"+fichier,dictionnaire),Pspam, Pham, bspam, bham)
 		if (res+isSpam)%2 == 1:
 			print(("SPAM" if isSpam else "HAM") +" " + dossier+"/"+fichier + " identifié comme un "+("SPAM" if (not isSpam) else "HAM")+" *** erreur ***")		
 		else:

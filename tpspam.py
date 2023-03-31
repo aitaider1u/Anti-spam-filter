@@ -1,14 +1,15 @@
 import numpy as np
 import os
 import math
+import re
 
 def lireMail(fichier, dictionnaire):
 	""" 
 	Lire un fichier et retourner un vecteur de booléens en fonctions du dictionnaire
 	"""
 	f = open(fichier, "r",encoding="ascii", errors="surrogateescape")
-	mots = f.read().split(" ")
-	
+	mots =    re.split(r' |,|-|_|;|!|\n',f.read())  #f.read().split(" ")
+
 	x = [False] * len(dictionnaire) 
 	dictionnaire =np.array(dictionnaire)
 	# modifié ..............................
@@ -64,7 +65,7 @@ def prediction(x, Pspam, Pham, bspam, bham):
 	#Pham_x = math.log(Pham) + np.sum(np.log((bham ** x) * ((1-bham) ** (1-np.array(x)))))
 	A = ((1-bham) ** (1-np.array(x)))   # calcul intemediare 
 	B = (bham ** x) # calcul intemediare 
-	Px_ham = np.prod(  A * B)
+	Px_ham = np.prod(A * B)
 	Pham_x=  Pham * Px_ham
 	Z_ham = math.log(Pspam)+ np.sum(np.log(A * B))
 
@@ -87,13 +88,15 @@ def test(dossier, isSpam, Pspam, Pham, bspam, bham):
 	dictionnaire=  charge_dico("dictionnaire1000en.txt")
 	for fichier in fichiers:
 		(res,Pspam_x,Pham_x) = prediction(lireMail(dossier+"/"+fichier,dictionnaire),Pspam, Pham, bspam, bham)
-		if (res+isSpam)%2 == 1:
-			print(("SPAM" if isSpam else "HAM") +" " + dossier+"/"+fichier + " identifié comme un "+("SPAM" if (not isSpam) else "HAM")+" *** erreur ***")		
-		else:
-			print(("SPAM" if isSpam else "HAM") +" "+dossier+"/"+fichier + " identifié comme un "+("SPAM" if (isSpam) else "HAM"))		
+		string = ("SPAM" if isSpam else "HAM")+ " "+ fichier +" : " + "P(Y=SPAM | X=x) = "+ str(Pspam_x) + ", P(Y=HAM | X=x) = "+ str(Pham_x)+"\n"
 
+		if (res+isSpam)%2 == 1:
+			string = string +  "               => identifié comme un "+("SPAM" if (not isSpam) else "HAM")+" *** erreur ***"		
+		else: 
+			string = string +  "               => identifié comme un "+("SPAM" if (isSpam) else "HAM")	
+		print(string)
 		if (res+isSpam)%2 == 0:
-			nbErreur = nbErreur +1  
+			nbErreur = nbErreur+1  
 
 	tauxErreur = nbErreur/len(fichiers)
 	return 1-tauxErreur # à modifier...
@@ -132,5 +135,5 @@ erreurHam = test("spam/baseTest/ham",False,Pspam,Pham,bspam,bham)
 
 print("Erreur de test sur 500 SPAM      : " +str(round(erreurSpam, 4)*100) +"%")
 print("Erreur de test sur 500 HAM       : " +str(round(erreurHam, 4)*100) +"%")
-print("Erreur de test globale sur 600 mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
+print("Erreur de test globale sur 1000 mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
 

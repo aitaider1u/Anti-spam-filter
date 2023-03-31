@@ -54,7 +54,6 @@ def prediction(x, Pspam, Pham, bspam, bham):
 	"""
 
 	#calcul de P(Y=Spam | X=x) 
-	#Pspam_x= math.log(Pspam) + np.sum(np.log((bspam ** x) * ((1-bspam) ** (1-np.array(x)))))
 	A = ((1-bspam) ** (1-np.array(x)))   # calcul intemediare 
 	B = (bspam ** x) # calcul intemediare 
 	Px_spam = np.prod(A *B)
@@ -62,7 +61,6 @@ def prediction(x, Pspam, Pham, bspam, bham):
 	Z_spam = math.log(Pspam)+ np.sum(np.log(A * B))
 	
 	#calcul de P(Y=Ham | X=x)
-	#Pham_x = math.log(Pham) + np.sum(np.log((bham ** x) * ((1-bham) ** (1-np.array(x)))))
 	A = ((1-bham) ** (1-np.array(x)))   # calcul intemediare 
 	B = (bham ** x) # calcul intemediare 
 	Px_ham = np.prod(A * B)
@@ -80,31 +78,31 @@ def test(dossier, isSpam, Pspam, Pham, bspam, bham):
 		Test le classifieur de paramètres Pspam, Pham, bspam, bham 
 		sur tous les fichiers d'un dossier étiquetés 
 		comme SPAM si isSpam et HAM sinon
-		
 		Retourne le taux d'erreur 
 	"""
 	fichiers = os.listdir(dossier)
 	nbErreur = 0 
 	dictionnaire=  charge_dico("dictionnaire1000en.txt")
+	cpt = 1 
 	for fichier in fichiers:
 		(res,Pspam_x,Pham_x) = prediction(lireMail(dossier+"/"+fichier,dictionnaire),Pspam, Pham, bspam, bham)
-		string = ("SPAM" if isSpam else "HAM")+ " "+ fichier +" : " + "P(Y=SPAM | X=x) = "+ str(Pspam_x) + ", P(Y=HAM | X=x) = "+ str(Pham_x)+"\n"
-
+		string = ("SPAM" if isSpam else "HAM")+ " "+str(cpt) + " ("+ fichier +") : " + "P(Y=SPAM | X=x) = "+ str(Pspam_x) + ", P(Y=HAM | X=x) = "+ str(Pham_x)+"\n"
 		if (res+isSpam)%2 == 1:
 			string = string +  "               => identifié comme un "+("SPAM" if (not isSpam) else "HAM")+" *** erreur ***"		
 		else: 
 			string = string +  "               => identifié comme un "+("SPAM" if (isSpam) else "HAM")	
 		print(string)
 		if (res+isSpam)%2 == 0:
-			nbErreur = nbErreur+1  
+			nbErreur = nbErreur+1
+		cpt = cpt + 1 
 
 	tauxErreur = nbErreur/len(fichiers)
-	return 1-tauxErreur # à modifier...
+	return 1-tauxErreur 
 
 
 ############ programme principal ############
 
-dossier_spams = "spam/baseapp/spam"	# à vérifier
+dossier_spams = "spam/baseapp/spam"
 dossier_hams = "spam/baseapp/ham"
 
 fichiersspams = os.listdir(dossier_spams)

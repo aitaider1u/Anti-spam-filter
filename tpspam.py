@@ -2,13 +2,15 @@ import numpy as np
 import os
 import math
 import re
+import pickle
+
 
 def lireMail(fichier, dictionnaire):
 	""" 
 	Lire un fichier et retourner un vecteur de booléens en fonctions du dictionnaire
 	"""
 	f = open(fichier, "r",encoding="ascii", errors="surrogateescape")
-	mots =    re.split(r' |,|-|_|;|!|\n',f.read())  #f.read().split(" ")
+	mots =   re.split(r' |,|\'|\(|\)|\"|=|-|_|;|:|!|\?|\n|\[|\]|#',f.read()) #f.read().split(" ")  # re.split(r' |,|-|_|;|!|\n',f.read()) 
 
 	x = [False] * len(dictionnaire) 
 	dictionnaire =np.array(dictionnaire)
@@ -100,6 +102,24 @@ def test(dossier, isSpam, Pspam, Pham, bspam, bham):
 	return 1-tauxErreur 
 
 
+
+#Ameliorations
+
+
+def createClassifieur(bspam,bham):
+	classifieur= {}
+	for i in range (len(bspam)):
+		classifieur['spam'+str(i)] = bspam[i]
+	for i in range (len(bspam)):
+		classifieur['ham'+str(i)] = bham[i]
+	return classifieur
+		 
+
+def testClassifieur(nameFileClassis):
+	return ''
+
+
+
 ############ programme principal ############
 
 dossier_spams = "spam/baseapp/spam"
@@ -134,4 +154,21 @@ erreurHam = test("spam/baseTest/ham",False,Pspam,Pham,bspam,bham)
 print("Erreur de test sur 500 SPAM      : " +str(round(erreurSpam, 4)*100) +"%")
 print("Erreur de test sur 500 HAM       : " +str(round(erreurHam, 4)*100) +"%")
 print("Erreur de test globale sur 1000 mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
+
+classifieur = createClassifieur(bspam,bham)
+#print (classifieur)
+
+
+
+
+f = open ("classifieur","wb")
+pickle.dump(classifieur,f)
+f.close()
+print ("--------")
+
+f = open ("classifieur","rb")
+classifieur = pickle.load(f)
+f.close()
+
+#print ( classifieur)
 

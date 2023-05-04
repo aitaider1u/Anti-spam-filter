@@ -12,7 +12,7 @@ EPSILON = 1
 class Classifier: 
 	#constructor 
 	def __init__(self,bspam,bham,nbSpam, nbHam):
-		self.coefBinomiaux =  {}   #dic		
+		self.coefBinomiaux =  {}   #dict 	
 		for i in range (len(bspam)):
 			self.coefBinomiaux['spam'+str(i)] = bspam[i]
 		for i in range (len(bspam)):
@@ -20,8 +20,8 @@ class Classifier:
 		self.nbSpam = nbSpam
 		self.nbHam = nbHam
 
-	#Save the Classifieur object
-	def save(self,ClassifierName):
+	def save(self,ClassifierName): 	#Save the Classifieur object
+
 		f = open (ClassifierName,"wb")
 		pickle.dump(self,f)
 		f.close()
@@ -45,7 +45,7 @@ class Classifier:
 	
 	def get_bHam(self):
 		return np.array ([value for key, value in self.coefBinomiaux.items() if "ham" in key])
-		
+
 	def get_PSpam(self):
 		return self.nbSpam/(self.nbSpam+self.nbHam)
 		
@@ -53,10 +53,3 @@ class Classifier:
 		return self.nbHam/(self.nbSpam+self.nbHam)
 
 
-
-#function to load a Classifier like a Classifieur object
-def loadClassifier(fileName):
-    f = open (fileName,"rb")
-    classifier = pickle.load(f)
-    f.close()
-    return classifier

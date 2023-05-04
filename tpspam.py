@@ -4,7 +4,10 @@ import math
 import re
 from decimal import Decimal
 from classifier import Classifier   
+from util import loadClassifier   
+
 from util import input_number   
+from util import input_string    
 
 
 def lireMail(fichier, dictionnaire):
@@ -153,46 +156,61 @@ dossier_hams = "spam/baseapp/ham"
 fichiersspams = os.listdir(dossier_spams)
 fichiershams =  os.listdir(dossier_hams) 
 
-print("\nChoisir la vesion : \n"+ "1 : Version Sans classifieur \n"+ "2 : Version avec classifieur \n")
+print("\nChoisir la vesion : \n"+ "  --> 1 : Creer un nouveau Classifieur \033[93m (Saisir 1) \033[0m \n" + "  --> 2 : Charger un ancien classifieur\033[93m (Saisir 2) \033[0m")
 version  = input_number(1,2,"Entez votre choix : ")
-
-
+ClassifierName = "Myclassifier"
+Classifieur = None
 if version == 1:
-	mSpam = len(fichiersspams)
-	mHam = len(fichiershams)
-
+	print()
+	mSpam  = input_number(1,500,"Vous voulez faire un apprentissage sur combien de spam (entre 1 et "+str(len(fichiersspams))+") ?  : ")
+	mHam   = input_number(1,2500,"Vous voulez faire un apprentissage sur combien de ham  (entre 1 et "+str(len(fichiershams))+") ?  : ")
 	# Apprentissage des bspam et bham:
 	print("apprentissage de bspam...")
-	bspam = apprendBinomial(dossier_spams, fichiersspams, dictionnaire)
+	bspam = apprendBinomial(dossier_spams, fichiersspams[:mSpam], dictionnaire)
 	print("apprentissage de bham...")
-	bham = apprendBinomial(dossier_hams, fichiershams, dictionnaire)
+	bham = apprendBinomial(dossier_hams, fichiershams[:mHam], dictionnaire)
+	print("\033[92mApprentissage fini\033[0m\n")
+
+
 	# Calcul des probabilités a priori Pspam et Pham:
 	Pspam = mSpam/(mSpam+mHam) 
 	Pham =  mHam/(mSpam+mHam)
 
 	# Calcul des erreurs avec la fonction test():
-	nbMailToTest = 500
-	erreurSpam =test("spam/baseTest/spam",True,Pspam,Pham,bspam,bham,nbMailToTest)
-	erreurHam = test("spam/baseTest/ham",False,Pspam,Pham,bspam,bham,nbMailToTest)
+	nbSpamToTest = input_number(1,500,"Vous voulez faire un Test  sur combien de spam (entre 1 et "+str(500)+") ?  : ")
+	nbHamToTest = input_number(1,500, "Vous voulez faire un Test sur combien de spam (entre 1 et "+str(500)+")  ?  : " )
+	erreurSpam =test("spam/baseTest/spam",True,Pspam,Pham,bspam,bham,nbSpamToTest)
+	erreurHam = test("spam/baseTest/ham",False,Pspam,Pham,bspam,bham,nbHamToTest)
 
-	print("Erreur de test sur "+str(nbMailToTest)+" SPAM      : " +str(round(erreurSpam, 4)*100) +"%")
-	print("Erreur de test sur "+str(nbMailToTest)+" HAM       : " +str(round(erreurHam, 4)*100) +"%")
-	print("Erreur de test globale sur "+str(nbMailToTest*2)+" mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
+	print("Erreur de test sur "+ str(nbSpamToTest) + " SPAM      : " +str(round(erreurSpam, 4)*100) +"%")
+	print("Erreur de test sur "+ str(nbHamToTest) + " HAM       : " +str(round(erreurHam, 4)*100) +"%")
+	print("Erreur de test globale sur "+str(nbSpamToTest+nbHamToTest)+" mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
 
 
-elif version == 2 : 
-	bspam = None
-	bham = None
-	clfr = Classifier(bspam,bham,500, 2500)
-	clfr.save("MyFamousClassifier")
+	#creer l'objet classifier
+	Classifier = Classifier(bspam,bham,mSpam,mHam)
+	
+	Classifier.save(input_string("\n---------------------\nVeuillez entrer un nom de fichier pour enregistrer les données : ","myClassifier"))
+	print("\033[92mClassifieur enregisté avec succées\033[0m\n")
+
+elif version == 2 :
+	ClassifierName = loadClassifier()
+	print("\033[92mClassifieur chargé avec succées\033[0m\n")
+
+	# bspam = None
+	# bham = None
+	# clfr = Classifier(bspam,bham,500, 2500)
+	# clfr.save("MyFamousClassifier")
 	# Calcul des erreurs avec la fonction test():
-	nbMailToTest = 500
-	erreurSpam =testClassifieur("spam/baseTest/spam",True,clfr,nbMailToTest)
-	erreurHam = testClassifieur("spam/baseTest/ham",False,clfr,nbMailToTest)
 
 
-	print("Erreur de test sur "+str(nbMailToTest)+" SPAM      : " +str(round(erreurSpam, 4)*100) +"%")
-	print("Erreur de test sur "+str(nbMailToTest)+" HAM       : " +str(round(erreurHam, 4)*100) +"%")
-	print("Erreur de test globale sur "+str(nbMailToTest*2)+" mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
+
+
+# nbMailToTest = 500
+# erreurSpam =testClassifieur("spam/baseTest/spam",True,clfr,nbMailToTest)
+# erreurHam = testClassifieur("spam/baseTest/ham",False,clfr,nbMailToTest)
+# print("Erreur de test sur "+str(nbMailToTest)+" SPAM      : " +str(round(erreurSpam, 4)*100) +"%")
+# print("Erreur de test sur "+str(nbMailToTest)+" HAM       : " +str(round(erreurHam, 4)*100) +"%")
+# print("Erreur de test globale sur "+str(nbMailToTest*2)+" mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
 
 

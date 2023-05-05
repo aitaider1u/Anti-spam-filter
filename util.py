@@ -7,17 +7,16 @@ def input_number(start,end,display):
 		try:
 			num = int(num)
 			if (num <start or num >end):
-				raise ValueError("entre "+str(start) +" et "+str(end))
+				raise ValueError("")
 			return num
 		except ValueError as e:
-			string = "Vieullez saisir un entier  " + str(e)
+			string = "Vieullez saisir un entier  " + "entre "+str(start) +" et "+str(end)
 			print("\033[91m"+string+"\033[0m")
+
 
 def input_string(display,defaultValue):
     string = input(display)
     return string
-
-
 
 #function to load a Classifier like a Classifieur object
 def loadClassifier():

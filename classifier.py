@@ -19,12 +19,11 @@ class Classifier:
 			self.coefBinomiaux['ham'+str(i)] = bham[i]
 		self.nbSpam = nbSpam
 		self.nbHam = nbHam
+		self.name = ""
 
-	def save(self,ClassifierName): 	#Save the Classifieur object
-
-		f = open (ClassifierName,"wb")
-		pickle.dump(self,f)
-		f.close()
+	def save(self): 	#Save the Classifieur object
+		with open(self.name, 'wb') as file:
+			pickle.dump(self, file)
 	
 	def online_learning_spam(self,mail):	#enline learning from one new mail which is a spam.
 		for i in range(len(mail)): 

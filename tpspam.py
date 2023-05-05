@@ -156,10 +156,13 @@ dossier_hams = "spam/baseapp/ham"
 fichiersspams = os.listdir(dossier_spams)
 fichiershams =  os.listdir(dossier_hams) 
 
+
 print("\nChoisir la vesion : \n"+ "  --> 1 : Creer un nouveau Classifieur \033[93m (Saisir 1) \033[0m \n" + "  --> 2 : Charger un ancien classifieur\033[93m (Saisir 2) \033[0m")
 version  = input_number(1,2,"Entez votre choix : ")
 ClassifierName = "Myclassifier"
-Classifieur = None
+classifieur = None
+
+
 if version == 1:
 	print()
 	mSpam  = input_number(1,500,"Vous voulez faire un apprentissage sur combien de spam (entre 1 et "+str(len(fichiersspams))+") ?  : ")
@@ -170,7 +173,6 @@ if version == 1:
 	print("apprentissage de bham...")
 	bham = apprendBinomial(dossier_hams, fichiershams[:mHam], dictionnaire)
 	print("\033[92mApprentissage fini\033[0m\n")
-
 
 	# Calcul des probabilités a priori Pspam et Pham:
 	Pspam = mSpam/(mSpam+mHam) 
@@ -186,31 +188,69 @@ if version == 1:
 	print("Erreur de test sur "+ str(nbHamToTest) + " HAM       : " +str(round(erreurHam, 4)*100) +"%")
 	print("Erreur de test globale sur "+str(nbSpamToTest+nbHamToTest)+" mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
 
-
 	#creer l'objet classifier
-	Classifier = Classifier(bspam,bham,mSpam,mHam)
-	
-	Classifier.save(input_string("\n---------------------\nVeuillez entrer un nom de fichier pour enregistrer les données : ","myClassifier"))
+	classifieur = Classifier(bspam,bham,mSpam,mHam)
+	classifierName = input_string("\n---------------------\nVeuillez entrer un nom de fichier pour enregister le classifieur : ","myClassifier");
+	classifieur.name = classifierName
+	classifieur.save()
 	print("\033[92mClassifieur enregisté avec succées\033[0m\n")
 
 elif version == 2 :
-	ClassifierName = loadClassifier()
+	classifieur = loadClassifier()
 	print("\033[92mClassifieur chargé avec succées\033[0m\n")
 
-	# bspam = None
-	# bham = None
-	# clfr = Classifier(bspam,bham,500, 2500)
-	# clfr.save("MyFamousClassifier")
-	# Calcul des erreurs avec la fonction test():
 
+stopLoop = False
+while(not stopLoop):
+	print()
+	print("1 : Apprendre de nouveau Spam  	\033[93m (Saisir 1) \033[0m")
+	print("2 : Apprendre de nouveau Ham   	\033[93m (Saisir 2) \033[0m")
+	print("3 : Tester le Classifieur      	\033[93m (Saisir 3) \033[0m")
+	print("4 : Sauvegarder le Classifie   	\033[93m (Saisir 4) \033[0m")
+	print("5 : Quitter                      \033[93m (Saisir 5) \033[0m")
+	action = input_number(1,5,"      -->  Saisir votre choix  :  ")
 
+	if (action == 1):
+		if(classifieur.nbSpam  >=  len(fichiersspams)):
+			print(str(classifieur.nbSpam)+"/"+str(len(fichiersspams))+" Spam ont été appris"+' \033[31mIl reste plus de spam a apprendre dans la base.\033[0m')
+		else:
+			nbSpamToTest =  input_number(1,len(fichiersspams)-classifieur.nbSpam," Saisir Le nombre de nouveau Spam a apprendre \033[93m (Il reste "+str(len(fichiersspams)-classifieur.nbSpam)+ " dans la base d'apprentissage) \033[0m: ")
+			for i in range(nbSpamToTest):
+				if(classifieur.nbSpam >=  len(fichiersspams)):
+					break
+				mail = lireMail(dossier_spams+"/"+fichiersspams[classifieur.nbSpam],dictionnaire)
+				classifieur.online_learning_spam(mail)
+			print("\033[92mApprentissage online fini \033[0m\n")
 
+	elif(action == 2):
+		if(classifieur.nbHam  >=  len(fichiershams)):
+			print(str(classifieur.nbHam)+"/"+str(len(fichiershams))+" Ham ont été appris"+' \033[31mIl reste plus de spam a apprendre dans la base.\033[0m')
+		else:
+			nbHamToTest =  input_number(1,len(fichiershams)-classifieur.nbHam," Saisir Le nombre de nouveau Ham a apprendre \033[93m (Il reste "+str(len(fichiershams)-classifieur.nbHam)+ "dans la base d'apprentissage) \033[0m: ")
+			for i in range(nbHamToTest):
+				if(classifieur.nbHam >=  len(fichiershams)):
+					break
+				mail = lireMail(dossier_hams+"/"+fichiershams[classifieur.nbHam],dictionnaire)
+				classifieur.online_learning_ham(mail)
+			print("\033[92mApprentissage online fini \033[0m\n")
 
-# nbMailToTest = 500
-# erreurSpam =testClassifieur("spam/baseTest/spam",True,clfr,nbMailToTest)
-# erreurHam = testClassifieur("spam/baseTest/ham",False,clfr,nbMailToTest)
-# print("Erreur de test sur "+str(nbMailToTest)+" SPAM      : " +str(round(erreurSpam, 4)*100) +"%")
-# print("Erreur de test sur "+str(nbMailToTest)+" HAM       : " +str(round(erreurHam, 4)*100) +"%")
-# print("Erreur de test globale sur "+str(nbMailToTest*2)+" mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
+	elif(action == 3):
+		# Calcul des erreurs avec la fonction test():
+		nbSpamToTest = input_number(1,500,"Vous voulez faire un Test  sur combien de spam (entre 1 et "+str(500)+") ?  : ")
+		nbHamToTest = input_number(1,500, "Vous voulez faire un Test sur combien de spam (entre 1 et "+str(500)+")  ?  : " )
+		erreurSpam =testClassifieur("spam/baseTest/spam",True,classifieur,nbSpamToTest)
+		erreurHam = testClassifieur("spam/baseTest/ham",False,classifieur,nbHamToTest)
+		print("Erreur de test sur "+str(nbSpamToTest)+" SPAM      : " +str(round(erreurSpam, 4)*100) +"%")
+		print("Erreur de test sur "+str(nbHamToTest)+" HAM       : " +str(round(erreurHam, 4)*100) +"%")
+		print("Erreur de test globale sur "+str(nbSpamToTest+nbHamToTest)+" mails   : " +str((round(erreurSpam, 4)*100+round(erreurHam, 4)*100)/2) +"%")
+
+	elif(action == 4):
+		classifieur.save()
+		print("\033[92mClassifieur "+ classifieur.name+" enregisté avec succées\033[0m\n")
+	elif(action == 5):
+		classifieur.save()
+		stopLoop = True
+		
+
 
 
